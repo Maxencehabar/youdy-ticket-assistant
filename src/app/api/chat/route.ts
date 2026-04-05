@@ -121,7 +121,8 @@ Quand tu proposes un ticket, utilise TOUJOURS ce format :
 export async function POST(req: Request) {
   const { messages } = (await req.json()) as { messages: UIMessage[] };
 
-  const lastText = messages[messages.length - 1]?.parts?.find((p: any) => p.type === "text")?.text || "";
+  const lastMsg = messages[messages.length - 1];
+  const lastText = lastMsg?.parts?.find((p): p is { type: "text"; text: string } => p.type === "text")?.text || "";
   console.log(`[Chat] ${messages.length} messages, last: "${lastText.substring(0, 100)}"`);
 
   const modelMessages = await convertToModelMessages(messages);
