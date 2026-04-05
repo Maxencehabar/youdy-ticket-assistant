@@ -119,11 +119,18 @@ Quand tu proposes un ticket, utilise TOUJOURS ce format :
 - Priorité par défaut : Medium. Demande à Elodie si c'est urgent.`;
 
 export async function POST(req: Request) {
+  // Auth check
+  const { verifyAuth } = await import("@/lib/auth");
+  const user = await verifyAuth(req);
+  if (!user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  }
+
   const { messages } = (await req.json()) as { messages: UIMessage[] };
 
   const lastMsg = messages[messages.length - 1];
   const lastText = lastMsg?.parts?.find((p): p is { type: "text"; text: string } => p.type === "text")?.text || "";
-  console.log(`[Chat] ${messages.length} messages, last: "${lastText.substring(0, 100)}"`);
+  console.log(`[Chat] [${user.email}] ${messages.length} messages, last: "${lastText.substring(0, 100)}"`);
 
   const modelMessages = await convertToModelMessages(messages);
 
