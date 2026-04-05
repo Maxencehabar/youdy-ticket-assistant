@@ -137,31 +137,6 @@ export async function POST(req: Request) {
       createJiraTicket,
     },
     stopWhen: stepCountIs(10),
-    onStepStart: ({ stepType }) => {
-      console.log(`[Step Start] type=${stepType}`);
-    },
-    onStepFinish: ({ stepType, toolCalls, toolResults, text, finishReason }) => {
-      console.log(`[Step Finish] type=${stepType} finishReason=${finishReason}`);
-      if (toolCalls?.length) {
-        toolCalls.forEach((tc) => {
-          console.log(`  [Tool Call] ${tc.toolName}(${JSON.stringify(tc.args).substring(0, 200)})`);
-        });
-      }
-      if (toolResults?.length) {
-        toolResults.forEach((tr) => {
-          console.log(`  [Tool Result] ${tr.toolName}: ${JSON.stringify(tr.result).substring(0, 200)}`);
-        });
-      }
-      if (text) {
-        console.log(`  [Text] ${text.substring(0, 200)}`);
-      }
-    },
-    onFinish: ({ finishReason, steps }) => {
-      console.log(`[Finish] reason=${finishReason} steps=${steps?.length}`);
-    },
-    onError: ({ error }) => {
-      console.error(`[Error] ${error}`);
-    },
   });
 
   return result.toUIMessageStreamResponse();

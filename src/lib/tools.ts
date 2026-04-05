@@ -39,17 +39,16 @@ export const queryCollection = tool({
       const snapshot = await query.get();
       console.log(`[queryCollection] Got ${snapshot.size} results from ${collection}`);
 
-      return snapshot.docs.map((doc) => {
+      const results = snapshot.docs.map((doc) => {
         const d = doc.data();
         const result: any = { _id: doc.id };
         for (const [key, val] of Object.entries(d)) {
-          // Skip large/sensitive fields
           if (key === "privateKey" || key === "bankToken" || key === "identityDocuments") {
             result[key] = "[REDACTED]";
           } else if (val && typeof val === "object" && val.toDate) {
             result[key] = val.toDate().toISOString();
           } else if (Array.isArray(val) && val.length > 10) {
-            result[key] = `[Array of ${val.length} items, first 3: ${JSON.stringify(val.slice(0, 3)).substring(0, 200)}]`;
+            result[key] = `[Array of ${val.length} items]`;
           } else if (typeof val === "object" && val !== null && !val.toDate && JSON.stringify(val).length > 300) {
             result[key] = `[Object with ${Object.keys(val).length} keys]`;
           } else {
@@ -59,10 +58,8 @@ export const queryCollection = tool({
         return result;
       });
 
-      // Truncate total response if too large
-      const json = JSON.stringify(results);
-      if (json.length > 5000) {
-        console.log(`[queryCollection] Response truncated from ${json.length} chars`);
+      if (JSON.stringify(results).length > 5000) {
+        console.log(`[queryCollection] Response truncated`);
         return results.slice(0, 3);
       }
       return results;
