@@ -1,6 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { useRef, useEffect, useState, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -146,22 +147,14 @@ export default function Home() {
 }
 
 function ChatScreen({ user, token }: { user: User; token: string }) {
+  const transport = useMemo(
+    () => new DefaultChatTransport({ headers: () => ({ Authorization: `Bearer ${token}` }) }),
+    [token],
+  );
   const { messages, sendMessage, status, setMessages } = useChat({
     experimental_throttle: 100,
-    transport: {
-      sendMessages: async ({ messages: msgs, abortSignal }: { messages: any; abortSignal?: AbortSignal }) => {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ messages: msgs }),
-          signal: abortSignal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        if (!res.body) throw new Error("No body");
-        return res.body;
-      },
-    },
-  } as any);
+    transport,
+  });
   const [input, setInput] = useState("");
   const isLoading = status === "streaming" || status === "submitted";
   const messagesEndRef = useRef<HTMLDivElement>(null);
